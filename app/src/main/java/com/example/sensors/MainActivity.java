@@ -16,8 +16,6 @@ import java.text.SimpleDateFormat;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
-    // https://examples.javacodegeeks.com/android/core/hardware/sensor/android-accelerometer-example/
-
     PostToDB postToDB;
     //public int c = 0;
 
@@ -129,10 +127,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         currentY.setText(cury);
         currentZ.setText(curz);
         String time = new SimpleDateFormat("DD/MM/YYYY.HH.mm.ss").format(new Timestamp(System.currentTimeMillis()));
-        Log.v("time",time);
-        postToDB = new PostToDB(curx, cury, curz,time);
+        Log.v("time", time);
+        postToDB = new PostToDB(curx, cury, curz, time);
         //if(c%678==0)
-            postToDB.post();
+        postToDB.post();
     }
 
     public void displayMaxValues() {
