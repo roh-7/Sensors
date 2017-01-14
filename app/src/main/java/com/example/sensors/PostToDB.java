@@ -22,24 +22,30 @@ public class PostToDB {
     String z;
     private Request request;
     String responseString;
+    String time;
 
-    public PostToDB(String x, String y, String z) {
+    public PostToDB(String x, String y, String z,String time) {
         this.x = x;
         this.y = y;
         this.z = z;
+        this.time = time;
     }
 
     void post() {
-        String url = "http://192.168.1.38/";
+        Log.d("tag","inside post");
+        String url = "http://192.168.1.38";
         OkHttpClient client = new OkHttpClient();
         RequestBody body = new FormBody.Builder()
                 .add("x", x)
                 .add("y", y)
                 .add("z", z)
+                .add("modified",time)
                 .build();
+        Log.d("url",body.toString());
         request = new Request.Builder()
                 .url(url)
                 .method("POST", body.create(null, new byte[0]))
+                .post(body)
                 .build();
 
         client.newCall(request).enqueue(new Callback() {

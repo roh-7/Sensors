@@ -8,11 +8,18 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.TextView;
+
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
     // https://examples.javacodegeeks.com/android/core/hardware/sensor/android-accelerometer-example/
+
+    PostToDB postToDB;
+    //public int c = 0;
 
     private float lastX, lastY, lastZ;
 
@@ -114,14 +121,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void displayCurrentValues() {
+        //c++;
         String curx = Float.toString(deltaX);
         String cury = Float.toString(deltaY);
         String curz = Float.toString(deltaZ);
         currentX.setText(curx);
         currentY.setText(cury);
         currentZ.setText(curz);
-        PostToDB postToDB = new PostToDB(curx, cury, curz);
-        postToDB.post();
+        String time = new SimpleDateFormat("DD/MM/YYYY.HH.mm.ss").format(new Timestamp(System.currentTimeMillis()));
+        Log.v("time",time);
+        postToDB = new PostToDB(curx, cury, curz,time);
+        //if(c%678==0)
+            postToDB.post();
     }
 
     public void displayMaxValues() {
