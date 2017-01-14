@@ -16,33 +16,30 @@ import okhttp3.Response;
  * Created by rohitramaswamy on 09/01/17.
  */
 
-public class PostToDB
-{
+public class PostToDB {
     String x;
     String y;
     String z;
     private Request request;
     String responseString;
 
-    public PostToDB(String x,String y,String z)
-    {
+    public PostToDB(String x, String y, String z) {
         this.x = x;
         this.y = y;
         this.z = z;
     }
 
-    void post()
-    {
-        String url = "http://192.168.1.35";
+    void post() {
+        String url = "http://192.168.1.38/";
         OkHttpClient client = new OkHttpClient();
         RequestBody body = new FormBody.Builder()
-                .add("xAxis",x)
-                .add("yAxis",y)
-                .add("zAxis",z)
+                .add("x", x)
+                .add("y", y)
+                .add("z", z)
                 .build();
         request = new Request.Builder()
                 .url(url)
-                .method("POST",body.create(null,new byte[0]))
+                .method("POST", body.create(null, new byte[0]))
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
@@ -54,10 +51,8 @@ public class PostToDB
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 responseString = response.body().string();
-                Log.v("response",responseString);
+                Log.v("response", responseString);
             }
         });
     }
-
-
 }

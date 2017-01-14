@@ -107,39 +107,38 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             v.vibrate(600);
     }
 
-    public void displayCleanValues()
-    {
+    public void displayCleanValues() {
         currentX.setText("0.0");
         currentY.setText("0.0");
         currentZ.setText("0.0");
     }
 
-    public void displayCurrentValues()
-    {
+    public void displayCurrentValues() {
         String curx = Float.toString(deltaX);
         String cury = Float.toString(deltaY);
         String curz = Float.toString(deltaZ);
         currentX.setText(curx);
         currentY.setText(cury);
         currentZ.setText(curz);
-        PostToDB postToDB = new PostToDB(curx,cury,curz);
+        PostToDB postToDB = new PostToDB(curx, cury, curz);
         postToDB.post();
     }
 
-    public void displayMaxValues()
-    {
+    public void displayMaxValues() {
         if (deltaX > deltaXMax) {
             deltaXMax = deltaX;
             maxX.setText(Float.toString(deltaXMax));
-        }if (deltaY > deltaYMax) {
+        }
+        if (deltaY > deltaYMax) {
             deltaYMax = deltaY;
             maxY.setText(Float.toString(deltaYMax));
-        }if (deltaZ > deltaZMax) {
+        }
+        if (deltaZ > deltaZMax) {
             deltaZMax = deltaZ;
             maxZ.setText(Float.toString(deltaZMax));
         }
 
-        }
+    }
 
 
 }
