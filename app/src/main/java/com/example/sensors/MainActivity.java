@@ -8,11 +8,7 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.widget.TextView;
-
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -22,7 +18,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float lastX, lastY, lastZ;
 
     private SensorManager sensorManager;
+    private SensorManager getSensorManager;
     private Sensor accelerometer;
+    private Sensor gyroscope;
 
     private float deltaXMax = 0;
     private float deltaYMax = 0;
@@ -32,9 +30,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float deltaY = 0;
     private float deltaZ = 0;
 
+    private float delGX=0;
+    private float delGY=0;
+    private float delGZ=0;
+
+
     private float vibrateThreshold = 0;
 
     private TextView currentX, currentY, currentZ, maxX, maxY, maxZ;
+
+    private TextView gyroX,gyroY,gyroZ;
 
     public Vibrator v;
 
@@ -53,6 +58,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             // fail! we do not have a sensor
         }
         // initialise vibration
+            getSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        if(getSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)!=null)
+        {
+            gyroscope = getSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+            getSensorManager.registerListener(this,gyroscope,SensorManager.SENSOR_DELAY_NORMAL);
+        }
 
         v = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);
     }
@@ -66,6 +77,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         maxX = (TextView) findViewById(R.id.maxX);
         maxY = (TextView) findViewById(R.id.maxY);
         maxZ = (TextView) findViewById(R.id.maxZ);
+
+        gyroX = (TextView) findViewById(R.id.GyroX);
+        gyroY = (TextView) findViewById(R.id.GyroY);
+        gyroZ = (TextView) findViewById(R.id.GyroZ);
     }
 
     //register the sensor onResume
@@ -73,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onResume() {
         super.onResume();
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        getSensorManager.registerListener(this,gyroscope,SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     // unregister in onPause
@@ -81,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onPause() {
         super.onPause();
         sensorManager.unregisterListener(this);
+        getSensorManager.unregisterListener(this);
     }
 
     @Override
@@ -91,31 +108,43 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
         //clean current values
-        displayCleanValues();
+        //displayCleanValues();
         // display the current values
         displayCurrentValues();
         // display the max values
-        displayMaxValues();
-
-        // get the change in x,y,z values of the accelerometer
-        deltaX = Math.abs(lastX - sensorEvent.values[0]);
-        deltaY = Math.abs(lastY - sensorEvent.values[1]);
-        deltaZ = Math.abs(lastZ - sensorEvent.values[2]);
-
+        //displayMaxValues();
+        if(sensorEvent.sensor.getType()==Sensor.TYPE_ACCELEROMETER) {
+            // get the change in x,y,z values of the accelerometer
+            deltaX = Math.abs(lastX - sensorEvent.values[0]);
+            deltaY = Math.abs(lastY - sensorEvent.values[1]);
+            deltaZ = Math.abs(lastZ - sensorEvent.values[2]);
+        }
+        else if(sensorEvent.sensor.getType()==Sensor.TYPE_GYROSCOPE)
+        {
+           delGX = Math.abs(sensorEvent.values[0]);
+           delGY = Math.abs(sensorEvent.values[1]);
+           delGZ = Math.abs(sensorEvent.values[2]);
+        }
         // if the change is below 2, it is just plain noise
 
-        if (deltaX < 2)
-            deltaX = 0;
-        if (deltaY < 2)
-            deltaY = 0;
-        if ((deltaX > vibrateThreshold) || (deltaY > vibrateThreshold) || (deltaZ > vibrateThreshold))
-            v.vibrate(600);
+//        if (deltaX < 2)
+//            deltaX = 0;
+//        if (deltaY < 2)
+//            deltaY = 0;
+        //if ((deltaX > vibrateThreshold) || (deltaY > vibrateThreshold) || (deltaZ > vibrateThreshold))
+            //v.vibrate(600);
     }
 
     public void displayCleanValues() {
         currentX.setText("0.0");
         currentY.setText("0.0");
         currentZ.setText("0.0");
+
+
+
+        gyroX.setText("0.0");
+        gyroY.setText("0.0");
+        gyroZ.setText("0.0");
     }
 
     public void displayCurrentValues() {
@@ -126,11 +155,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         currentX.setText(curx);
         currentY.setText(cury);
         currentZ.setText(curz);
-        String time = new SimpleDateFormat("DD/MM/YYYY.HH.mm.ss").format(new Timestamp(System.currentTimeMillis()));
-        Log.v("time", time);
-        postToDB = new PostToDB(curx, cury, curz, time);
+
+        String curgx = Float.toString(delGX);
+        String curgy = Float.toString(delGY);
+        String curgz = Float.toString(delGZ);
+
+        gyroX.setText(curgx);
+        gyroY.setText(curgy);
+        gyroZ.setText(curgz);
+
+        //String time = new SimpleDateFormat("DD/MM/YYYY.HH.mm.ss").format(new Timestamp(System.currentTimeMillis()));
+        //Log.v("time", time);
+        //postToDB = new PostToDB(curx, cury, curz, time);
         //if(c%678==0)
-        postToDB.post();
+        //postToDB.post();
     }
 
     public void displayMaxValues() {
