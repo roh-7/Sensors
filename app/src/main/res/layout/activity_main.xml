@@ -253,6 +253,13 @@
                                 android:layout_gravity="center"/>
                         </LinearLayout>
             </LinearLayout>
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/btn"
+                android:text="Click me to start!"
+                android:textSize="20sp"
+                android:gravity="center"/>
             </LinearLayout>
     </ScrollView>
 </LinearLayout>

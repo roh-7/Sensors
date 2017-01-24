@@ -8,14 +8,29 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
+
+import java.io.BufferedWriter;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.Socket;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
     PostToDB postToDB;
     //public int c = 0;
 
+
+    public int port = 9001;
+    public String ip = "192.168.43.140";
+
     private float lastX, lastY, lastZ;
+
+    public boolean connected = false;
 
     private SensorManager sensorManager;
     private SensorManager getSensorManager;
@@ -26,14 +41,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float deltaYMax = 0;
     private float deltaZMax = 0;
 
-    private float deltaX = 0;
-    private float deltaY = 0;
-    private float deltaZ = 0;
+    public boolean clicked = false;
 
-    private float delGX=0;
-    private float delGY=0;
-    private float delGZ=0;
+    public float deltaX = 0;
+    public float deltaY = 0;
+    public float deltaZ = 0;
 
+    Thread newThread = new Thread(new ClientThre());
+
+
+    public float delGX=0;
+    public float delGY=0;
+    public float delGZ=0;
+
+    //public Button btn;
 
     private float vibrateThreshold = 0;
 
@@ -64,10 +85,49 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             gyroscope = getSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
             getSensorManager.registerListener(this,gyroscope,SensorManager.SENSOR_DELAY_NORMAL);
         }
+        //btn = (Button) findViewById(R.id.btn);
 
+//        if(!clicked)
+//        {
+            //btn.setText("1");
+
+
+//            clicked = true;
+//        }
+//        else if(newThread!=null)
+//        {
+            //btn.setText("0");
+            //newThread.interrupt();
+//            clicked = false;
+//        }
+//        btn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//
+//
+//
+//            }
+//        });
         v = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);
     }
 
+    private Button.OnClickListener connectListener = new Button.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if (!connected) {
+                if (!ip.equals("")) {
+                    //connectPhones.setText("Stop Streaming");
+                    Thread cThread = new Thread(new ClientThre());
+                    cThread.start();
+                }
+            }
+            else{
+                //connectPhones.setText("Start Streaming");
+                connected=false;
+               // acc_disp=false;
+            }
+        }
+    };
 
     public void initialiseViews() {
         currentX = (TextView) findViewById(R.id.currentX);
@@ -118,6 +178,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             deltaX = Math.abs(lastX - sensorEvent.values[0]);
             deltaY = Math.abs(lastY - sensorEvent.values[1]);
             deltaZ = Math.abs(lastZ - sensorEvent.values[2]);
+//            Thread newThread = new Thread(new ClientThread(deltaX,deltaY,deltaZ));
+//            newThread.start();
         }
         else if(sensorEvent.sensor.getType()==Sensor.TYPE_GYROSCOPE)
         {
@@ -187,139 +249,41 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
-
-}
-
-
-    /*
-
-    private SensorManager mSensorManager;
-    private Sensor mSensor;
-    private SensorEvent mSensorEvent;
-    public static final float EPSILON = 0.000000001f;
-
-
-    private static final float NS2S = 1.0f / 1000000000.0f;
-    private float timestamp;
-    private final float[] deltaRotationVector = new float[4];
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-
-        TextView textView = (TextView) findViewById(R.id.helw);
-        String str = String.valueOf(mSensor);
-        textView.setText(str);
-        Log.d("bro1",str);
-        //onSensorChanged(mSensorEvent);
-    }
-    @Override
-    public void onSensorChanged(SensorEvent event) {
-        // This timestep's delta rotation to be multiplied by the current rotation
-        // after computing it from the gyro sample data.
-        if (timestamp != 0) {
-            final float dT = (event.timestamp - timestamp) * NS2S;
-            // Axis of the rotation sample, not normalized yet.
-            float axisX = event.values[0];
-            float axisY = event.values[1];
-            float axisZ = event.values[2];
-
-            // Calculate the angular speed of the sample
-            float omegaMagnitude = (float) Math.sqrt(axisX*axisX + axisY*axisY + axisZ*axisZ);
-
-            // Normalize the rotation vector if it's big enough to get the axis
-            // (that is, EPSILON should represent your maximum allowable margin of error)
-            if (omegaMagnitude > EPSILON) {
-                axisX /= omegaMagnitude;
-                axisY /= omegaMagnitude;
-                axisZ /= omegaMagnitude;
+    public class ClientThre implements Runnable
+    {
+        PrintWriter out;
+        Socket socket;
+        public void run() {
+            try {
+                InetAddress serverAddr = InetAddress.getByName(ip);
+                Log.v("boo","hii");
+                socket = new Socket(serverAddr, port);
+                Log.v("boo","kjkh");
+                out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
+                Log.v("boo","gfds");
+                while (true) {
+                    out.printf("%10.2f\t %10.2f\t %10.2f\n", deltaX, deltaY, deltaZ);
+                    Log.v("boo", "ijo");
+                    out.flush();
+                    Thread.sleep(2);
+                }
+            } catch (Exception e) {
+                Log.v("boo","uidfn");
+                e.printStackTrace();
+            } finally {
+                try {
+                    socket.close();
+                } catch (Exception e) {
+                    Log.v("boo","fiajcak");
+                    e.printStackTrace();
+                }
             }
-
-            // Integrate around this axis with the angular speed by the timestep
-            // in order to get a delta rotation from this sample over the timestep
-            // We will convert this axis-angle representation of the delta rotation
-            // into a quaternion before turning it into the rotation matrix.
-            float thetaOverTwo = omegaMagnitude * dT / 2.0f;
-            float sinThetaOverTwo = (float) Math.sin(thetaOverTwo);
-            float cosThetaOverTwo = (float) Math.cos(thetaOverTwo);
-            deltaRotationVector[0] = sinThetaOverTwo * axisX;
-            deltaRotationVector[1] = sinThetaOverTwo * axisY;
-            deltaRotationVector[2] = sinThetaOverTwo * axisZ;
-            deltaRotationVector[3] = cosThetaOverTwo;
         }
-        timestamp = event.timestamp;
-        float[] deltaRotationMatrix = new float[9];
-        SensorManager.getRotationMatrixFromVector(deltaRotationMatrix, deltaRotationVector);
-        //for(int i=0;i<4;i++)
+    };
 
-        Log.d("bro",String.valueOf(deltaRotationVector[0]));
-        Log.d("bro",String.valueOf(deltaRotationVector[1]));
-        Log.d("bro",String.valueOf(deltaRotationVector[2]));
-        Log.d("bro",String.valueOf(deltaRotationVector[3]));
-
-        // User code should concatenate the delta rotation we computed with the current rotation
-        // in order to get the updated rotation.
-        // rotationCurrent = rotationCurrent * deltaRotationMatrix;
-    }
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int i) {
 
     }
-}
 
-*/
-/*
 
-// Create a constant to convert nanoseconds to seconds.
-private static final float NS2S = 1.0f / 1000000000.0f;
-private final float[] deltaRotationVector = new float[4]();
-private float timestamp;
 
-public void onSensorChanged(SensorEvent event) {
-  // This timestep's delta rotation to be multiplied by the current rotation
-  // after computing it from the gyro sample data.
-  if (timestamp != 0) {
-    final float dT = (event.timestamp - timestamp) * NS2S;
-    // Axis of the rotation sample, not normalized yet.
-    float axisX = event.values[0];
-    float axisY = event.values[1];
-    float axisZ = event.values[2];
 
-    // Calculate the angular speed of the sample
-    float omegaMagnitude = sqrt(axisX*axisX + axisY*axisY + axisZ*axisZ);
-
-    // Normalize the rotation vector if it's big enough to get the axis
-    // (that is, EPSILON should represent your maximum allowable margin of error)
-    if (omegaMagnitude > EPSILON) {
-      axisX /= omegaMagnitude;
-      axisY /= omegaMagnitude;
-      axisZ /= omegaMagnitude;
-    }
-
-    // Integrate around this axis with the angular speed by the timestep
-    // in order to get a delta rotation from this sample over the timestep
-    // We will convert this axis-angle representation of the delta rotation
-    // into a quaternion before turning it into the rotation matrix.
-    float thetaOverTwo = omegaMagnitude * dT / 2.0f;
-    float sinThetaOverTwo = sin(thetaOverTwo);
-    float cosThetaOverTwo = cos(thetaOverTwo);
-    deltaRotationVector[0] = sinThetaOverTwo * axisX;
-    deltaRotationVector[1] = sinThetaOverTwo * axisY;
-    deltaRotationVector[2] = sinThetaOverTwo * axisZ;
-    deltaRotationVector[3] = cosThetaOverTwo;
-  }
-  timestamp = event.timestamp;
-  float[] deltaRotationMatrix = new float[9];
-  SensorManager.getRotationMatrixFromVector(deltaRotationMatrix, deltaRotationVector);
-    // User code should concatenate the delta rotation we computed with the current rotation
-    // in order to get the updated rotation.
-    // rotationCurrent = rotationCurrent * deltaRotationMatrix;
-   }
-}
-
-*/
