@@ -25,13 +25,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     //public int c = 0;
 
 
-    public int port = 9001;
-    public String ip = "192.168.43.140";
+    public int port = 15000;
+    public String ip = "192.168.0.100";
 
     private float lastX, lastY, lastZ;
 
     public boolean connected = false;
-
+    private Button btn;
     private SensorManager sensorManager;
     private SensorManager getSensorManager;
     private Sensor accelerometer;
@@ -85,32 +85,43 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             gyroscope = getSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
             getSensorManager.registerListener(this,gyroscope,SensorManager.SENSOR_DELAY_NORMAL);
         }
-        //btn = (Button) findViewById(R.id.btn);
-
-//        if(!clicked)
-//        {
-            //btn.setText("1");
-
-
-//            clicked = true;
-//        }
-//        else if(newThread!=null)
-//        {
-            //btn.setText("0");
-            //newThread.interrupt();
-//            clicked = false;
-//        }
-//        btn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
+        btn = (Button) findViewById(R.id.btn);
+        btn.setOnClickListener(connectListener);
 //
-//
-//
-//            }
-//        });
         v = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);
     }
 
+    public class ClientThre implements Runnable
+    {
+        PrintWriter out;
+        Socket socket;
+        public void run() {
+            try {
+                InetAddress serverAddr = InetAddress.getByName(ip);
+                Log.v("boo","hii");
+                socket = new Socket(serverAddr, port);
+                Log.v("boo","kjkh");
+                out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
+                Log.v("boo","gfds");
+                while (true) {
+                    out.printf("%10.2f\t %10.2f\t %10.2f\n", deltaX, deltaY, deltaZ);
+                    Log.v("boo", "ijo");
+                    out.flush();
+                    Thread.sleep(2);
+                }
+            } catch (Exception e) {
+                Log.v("boo","uidfn");
+                e.printStackTrace();
+            } finally {
+                try {
+                    socket.close();
+                } catch (Exception e) {
+                    Log.v("boo","fiajcak");
+                    e.printStackTrace();
+                }
+            }
+        }
+    };
     private Button.OnClickListener connectListener = new Button.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -249,37 +260,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
-    public class ClientThre implements Runnable
-    {
-        PrintWriter out;
-        Socket socket;
-        public void run() {
-            try {
-                InetAddress serverAddr = InetAddress.getByName(ip);
-                Log.v("boo","hii");
-                socket = new Socket(serverAddr, port);
-                Log.v("boo","kjkh");
-                out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
-                Log.v("boo","gfds");
-                while (true) {
-                    out.printf("%10.2f\t %10.2f\t %10.2f\n", deltaX, deltaY, deltaZ);
-                    Log.v("boo", "ijo");
-                    out.flush();
-                    Thread.sleep(2);
-                }
-            } catch (Exception e) {
-                Log.v("boo","uidfn");
-                e.printStackTrace();
-            } finally {
-                try {
-                    socket.close();
-                } catch (Exception e) {
-                    Log.v("boo","fiajcak");
-                    e.printStackTrace();
-                }
-            }
-        }
-    };
+
 
 
     }
