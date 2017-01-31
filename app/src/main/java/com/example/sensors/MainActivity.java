@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import java.io.BufferedWriter;
@@ -25,8 +26,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     //public int c = 0;
 
 
-    public int port = 15000;
-    public String ip = "192.168.0.100";
+    public int port ;
+    public String ip ;
 
     private float lastX, lastY, lastZ;
 
@@ -36,12 +37,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private SensorManager getSensorManager;
     private Sensor accelerometer;
     private Sensor gyroscope;
+    public EditText porte;
+    public EditText ipade;
 
     private float deltaXMax = 0;
     private float deltaYMax = 0;
     private float deltaZMax = 0;
 
-    public boolean clicked = false;
 
     public float deltaX = 0;
     public float deltaY = 0;
@@ -87,7 +89,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
         btn = (Button) findViewById(R.id.btn);
         btn.setOnClickListener(connectListener);
-//
+
+        ipade=(EditText) findViewById(R.id.ipad);
+        porte=(EditText) findViewById(R.id.port);
+
         v = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);
     }
 
@@ -104,37 +109,50 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
                 Log.v("boo","gfds");
                 while (true) {
-                    out.printf("%10.2f\t %10.2f\t %10.2f\n", deltaX, deltaY, deltaZ);
+                    out.printf("A:%10.2f\t %10.2f\t %10.2f\n", deltaX, deltaY, deltaZ);
+                    out.printf("G:%10.2f\t %10.2f\t %10.2f\n", delGX, delGY, delGZ);
                     Log.v("boo", "ijo");
                     out.flush();
                     Thread.sleep(2);
+                    if(!connected){
+                        break;
+                    }
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 Log.v("boo","uidfn");
                 e.printStackTrace();
-            } finally {
+            }
+            finally {
                 try {
+                    Log.v("socket","closed");
                     socket.close();
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     Log.v("boo","fiajcak");
                     e.printStackTrace();
                 }
             }
+
         }
     };
     private Button.OnClickListener connectListener = new Button.OnClickListener() {
         @Override
         public void onClick(View v) {
             if (!connected) {
+                ip=ipade.getText().toString();
+                port=Integer.parseInt(porte.getText().toString());
                 if (!ip.equals("")) {
                     //connectPhones.setText("Stop Streaming");
                     Thread cThread = new Thread(new ClientThre());
                     cThread.start();
+                    connected=true;
                 }
             }
             else{
                 //connectPhones.setText("Start Streaming");
                 connected=false;
+                Log.v("button","closed "+connected);
                // acc_disp=false;
             }
         }

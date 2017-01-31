@@ -260,7 +260,18 @@
                 android:text="Click me to start!"
                 android:textSize="20sp"
                 android:gravity="center"/>
+            <LinearLayout
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:orientation="vertical">
+            <EditText android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/ipad"/>
+            <EditText android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/port"/>
             </LinearLayout>
+        </LinearLayout>
     </ScrollView>
 </LinearLayout>
 
