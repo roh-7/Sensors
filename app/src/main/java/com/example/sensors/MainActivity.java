@@ -1,6 +1,8 @@
 package com.example.sensors;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -8,12 +10,18 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetAddress;
@@ -24,9 +32,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     PostToDB postToDB;
     //public int c = 0;
 
+public ImageView imageView;
 
     public int port = 9001;
-    public String ip = "192.168.43.140";
+    public String ip = "192.168.1.36";
 
     private float lastX, lastY, lastZ;
 
@@ -109,6 +118,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //            }
 //        });
         v = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);
+
     }
 
     private Button.OnClickListener connectListener = new Button.OnClickListener() {
@@ -249,10 +259,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
-    public class ClientThre implements Runnable
+    public class ClientThre extends Thread
     {
-        PrintWriter out;
+        PrintWriter out; // used to send sensor data
         Socket socket;
+        BufferedReader in; // used to get response
+        String msg; // this variable stores the response as a string.
+        @Override
         public void run() {
             try {
                 InetAddress serverAddr = InetAddress.getByName(ip);
@@ -261,6 +274,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 Log.v("boo","kjkh");
                 out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
                 Log.v("boo","gfds");
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                msg = in.toString();
+                String imgReq = msg.substring(msg.indexOf(",")+1);
+                InputStream stream = new ByteArrayInputStream(Base64.decode(imgReq.getBytes(),Base64.DEFAULT));
+                final Bitmap bmp = BitmapFactory.decodeStream(stream);
+                try {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            imageView = (ImageView)findViewById(R.id.img);
+                            imageView.setImageBitmap(bmp);
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 while (true) {
                     out.printf("%10.2f\t %10.2f\t %10.2f\n", deltaX, deltaY, deltaZ);
                     Log.v("boo", "ijo");
@@ -280,7 +309,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         }
     };
-
 
     }
 

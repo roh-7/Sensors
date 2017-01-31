@@ -3,7 +3,7 @@ import socket
 import math
 import cv2
 
-TCP_IP = "192.168.43.140"
+TCP_IP = "192.168.1.36"
 TCP_PORT= 9001
 
 sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)

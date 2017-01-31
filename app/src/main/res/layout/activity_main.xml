@@ -260,6 +260,11 @@
                 android:text="Click me to start!"
                 android:textSize="20sp"
                 android:gravity="center"/>
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/img"/>
             </LinearLayout>
     </ScrollView>
 </LinearLayout>
