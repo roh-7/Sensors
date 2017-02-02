@@ -38,12 +38,14 @@
             <EditText
                 android:id="@+id/StreamAddress"
                 android:layout_width="match_parent"
+                android:hint="Url"
                 android:layout_height="wrap_content" />
 
             <Button
                 android:id="@+id/Start"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:text="Click"/>
         </LinearLayout>
 
     </ScrollView>

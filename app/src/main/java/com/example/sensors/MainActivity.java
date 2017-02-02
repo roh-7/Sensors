@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float lastX, lastY, lastZ;
 
     public boolean connected = false;
-    private Button btn;
+
     private SensorManager sensorManager;
     private SensorManager getSensorManager;
     private Sensor accelerometer;
@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public float delGY = 0;
     public float delGZ = 0;
 
-    //public Button btn;
+    public Button btn;
 
     private float vibrateThreshold = 0;
 
@@ -77,16 +77,30 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         video = (VideoView) findViewById(R.id.Video);
         ipade = (EditText) findViewById(R.id.ipad);
         porte = (EditText) findViewById(R.id.port);
-        address = (EditText) findViewById(R.id.StreamAddress);
-        String adds = address.getText().toString();
-        String address = "http://" + adds;
-        try {
-            Uri uri = Uri.parse(address);
-            video.setVideoURI(uri);
-        }
-        catch(Exception e){
-            e.printStackTrace();
-        }
+        Log.v("tag","tag");
+        btn = (Button) findViewById(R.id.Start);
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    address = (EditText) findViewById(R.id.StreamAddress);
+                    String adds = address.getText().toString();
+                    String address = "http://" + adds;
+                    Log.v("tag",address);
+                    Uri uri = Uri.parse(address);
+                    Log.v("tag","tag12");
+                    video.setVideoURI(uri);
+                    Log.v("tag","tag433");
+
+                    video.start();
+                }
+                catch(Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
+
+
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null) {
@@ -103,8 +117,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             gyroscope = getSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
             getSensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
         }
-        btn = (Button) findViewById(R.id.btn);
-        btn.setOnClickListener(connectListener);
+//        btn = (Button) findViewById(R.id.btn);
+//        btn.setOnClickListener(connectListener);
 
 
 
@@ -172,17 +186,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     };
 
     public void initialiseViews() {
-        currentX = (TextView) findViewById(R.id.currentX);
-        currentY = (TextView) findViewById(R.id.currentY);
-        currentZ = (TextView) findViewById(R.id.currentZ);
-
-        maxX = (TextView) findViewById(R.id.maxX);
-        maxY = (TextView) findViewById(R.id.maxY);
-        maxZ = (TextView) findViewById(R.id.maxZ);
-
-        gyroX = (TextView) findViewById(R.id.GyroX);
-        gyroY = (TextView) findViewById(R.id.GyroY);
-        gyroZ = (TextView) findViewById(R.id.GyroZ);
+//        currentX = (TextView) findViewById(R.id.currentX);
+//        currentY = (TextView) findViewById(R.id.currentY);
+//        currentZ = (TextView) findViewById(R.id.currentZ);
+//
+//        maxX = (TextView) findViewById(R.id.maxX);
+//        maxY = (TextView) findViewById(R.id.maxY);
+//        maxZ = (TextView) findViewById(R.id.maxZ);
+//
+//        gyroX = (TextView) findViewById(R.id.GyroX);
+//        gyroY = (TextView) findViewById(R.id.GyroY);
+//        gyroZ = (TextView) findViewById(R.id.GyroZ);
     }
 
     //register the sensor onResume
@@ -212,7 +226,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //clean current values
         //displayCleanValues();
         // display the current values
-        displayCurrentValues();
+        //displayCurrentValues();
         // display the max values
         //displayMaxValues();
         if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
@@ -237,33 +251,33 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //v.vibrate(600);
     }
 
-    public void displayCleanValues() {
-        currentX.setText("0.0");
-        currentY.setText("0.0");
-        currentZ.setText("0.0");
+//    public void displayCleanValues() {
+//        currentX.setText("0.0");
+//        currentY.setText("0.0");
+//        currentZ.setText("0.0");
+//
+//
+//        gyroX.setText("0.0");
+//        gyroY.setText("0.0");
+//        gyroZ.setText("0.0");
+//    }
 
-
-        gyroX.setText("0.0");
-        gyroY.setText("0.0");
-        gyroZ.setText("0.0");
-    }
-
-    public void displayCurrentValues() {
-        //c++;
-        String curx = Float.toString(deltaX);
-        String cury = Float.toString(deltaY);
-        String curz = Float.toString(deltaZ);
-        currentX.setText(curx);
-        currentY.setText(cury);
-        currentZ.setText(curz);
-
-        String curgx = Float.toString(delGX);
-        String curgy = Float.toString(delGY);
-        String curgz = Float.toString(delGZ);
-
-        gyroX.setText(curgx);
-        gyroY.setText(curgy);
-        gyroZ.setText(curgz);
+//    public void displayCurrentValues() {
+//        //c++;
+//        String curx = Float.toString(deltaX);
+//        String cury = Float.toString(deltaY);
+//        String curz = Float.toString(deltaZ);
+//        currentX.setText(curx);
+//        currentY.setText(cury);
+//        currentZ.setText(curz);
+//
+//        String curgx = Float.toString(delGX);
+//        String curgy = Float.toString(delGY);
+//        String curgz = Float.toString(delGZ);
+//
+//        gyroX.setText(curgx);
+//        gyroY.setText(curgy);
+//        gyroZ.setText(curgz);
 
         //String time = new SimpleDateFormat("DD/MM/YYYY.HH.mm.ss").format(new Timestamp(System.currentTimeMillis()));
         //Log.v("time", time);
@@ -272,24 +286,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //postToDB.post();
     }
 
-    public void displayMaxValues() {
-        if (deltaX > deltaXMax) {
-            deltaXMax = deltaX;
-            maxX.setText(Float.toString(deltaXMax));
-        }
-        if (deltaY > deltaYMax) {
-            deltaYMax = deltaY;
-            maxY.setText(Float.toString(deltaYMax));
-        }
-        if (deltaZ > deltaZMax) {
-            deltaZMax = deltaZ;
-            maxZ.setText(Float.toString(deltaZMax));
-        }
+//    public void displayMaxValues() {
+//        if (deltaX > deltaXMax) {
+//            deltaXMax = deltaX;
+//            maxX.setText(Float.toString(deltaXMax));
+//        }
+//        if (deltaY > deltaYMax) {
+//            deltaYMax = deltaY;
+//            maxY.setText(Float.toString(deltaYMax));
+//        }
+//        if (deltaZ > deltaZMax) {
+//            deltaZMax = deltaZ;
+//            maxZ.setText(Float.toString(deltaZMax));
+//        }
+//
+//    }
 
-    }
 
 
-}
 
 
 
