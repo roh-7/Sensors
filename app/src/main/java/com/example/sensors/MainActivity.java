@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.MediaController;
 import android.widget.TextView;
 import android.widget.VideoView;
 
@@ -72,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        final MediaController mediaController = new MediaController(this);
         setContentView(R.layout.activity_main);
         initialiseViews();
         video = (VideoView) findViewById(R.id.Video);
@@ -89,6 +91,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     Log.v("tag",address);
                     Uri uri = Uri.parse(address);
                     Log.v("tag","tag12");
+                    video.setMediaController(mediaController);
                     video.setVideoURI(uri);
                     Log.v("tag","tag433");
 
