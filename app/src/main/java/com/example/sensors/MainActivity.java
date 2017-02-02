@@ -5,6 +5,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +14,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.VideoView;
 
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
@@ -25,9 +27,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     PostToDB postToDB;
     //public int c = 0;
 
-
-    public int port ;
-    public String ip ;
+    public VideoView video;
+    public EditText address;
+    public int port;
+    public String ip;
 
     private float lastX, lastY, lastZ;
 
@@ -52,9 +55,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     Thread newThread = new Thread(new ClientThre());
 
 
-    public float delGX=0;
-    public float delGY=0;
-    public float delGZ=0;
+    public float delGX = 0;
+    public float delGY = 0;
+    public float delGZ = 0;
 
     //public Button btn;
 
@@ -62,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private TextView currentX, currentY, currentZ, maxX, maxY, maxZ;
 
-    private TextView gyroX,gyroY,gyroZ;
+    private TextView gyroX, gyroY, gyroZ;
 
     public Vibrator v;
 
@@ -71,6 +74,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initialiseViews();
+        video = (VideoView) findViewById(R.id.Video);
+        ipade = (EditText) findViewById(R.id.ipad);
+        porte = (EditText) findViewById(R.id.port);
+        address = (EditText) findViewById(R.id.StreamAddress);
+        String adds = address.getText().toString();
+        String address = "http://" + adds;
+        try {
+            Uri uri = Uri.parse(address);
+            video.setVideoURI(uri);
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null) {
             // success! we have an accelerometer
@@ -81,79 +98,75 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             // fail! we do not have a sensor
         }
         // initialise vibration
-            getSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        if(getSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)!=null)
-        {
+        getSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        if (getSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null) {
             gyroscope = getSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-            getSensorManager.registerListener(this,gyroscope,SensorManager.SENSOR_DELAY_NORMAL);
+            getSensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
         }
         btn = (Button) findViewById(R.id.btn);
         btn.setOnClickListener(connectListener);
 
-        ipade=(EditText) findViewById(R.id.ipad);
-        porte=(EditText) findViewById(R.id.port);
+
 
         v = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);
     }
 
-    public class ClientThre implements Runnable
-    {
+    public class ClientThre implements Runnable {
         PrintWriter out;
         Socket socket;
+
         public void run() {
             try {
                 InetAddress serverAddr = InetAddress.getByName(ip);
-                Log.v("boo","hii");
+                Log.v("boo", "hii");
                 socket = new Socket(serverAddr, port);
-                Log.v("boo","kjkh");
+                Log.v("boo", "kjkh");
                 out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
-                Log.v("boo","gfds");
+                Log.v("boo", "gfds");
                 while (true) {
                     out.printf("A:%10.2f\t %10.2f\t %10.2f\n", deltaX, deltaY, deltaZ);
                     out.printf("G:%10.2f\t %10.2f\t %10.2f\n", delGX, delGY, delGZ);
                     Log.v("boo", "ijo");
                     out.flush();
                     Thread.sleep(2);
-                    if(!connected){
+                    if (!connected) {
                         break;
                     }
                 }
-            }
-            catch (Exception e) {
-                Log.v("boo","uidfn");
+            } catch (Exception e) {
+                Log.v("boo", "uidfn");
                 e.printStackTrace();
-            }
-            finally {
+            } finally {
                 try {
-                    Log.v("socket","closed");
+                    Log.v("socket", "closed");
                     socket.close();
-                }
-                catch (Exception e) {
-                    Log.v("boo","fiajcak");
+                } catch (Exception e) {
+                    Log.v("boo", "fiajcak");
                     e.printStackTrace();
                 }
             }
 
         }
-    };
+    }
+
+    ;
     private Button.OnClickListener connectListener = new Button.OnClickListener() {
         @Override
         public void onClick(View v) {
             if (!connected) {
-                ip=ipade.getText().toString();
-                port=Integer.parseInt(porte.getText().toString());
+                ip = ipade.getText().toString();
+                port = Integer.parseInt(porte.getText().toString());
                 if (!ip.equals("")) {
                     //connectPhones.setText("Stop Streaming");
                     Thread cThread = new Thread(new ClientThre());
                     cThread.start();
-                    connected=true;
+                    connected = true;
                 }
-            }
-            else{
+            } else {
                 //connectPhones.setText("Start Streaming");
-                connected=false;
-                Log.v("button","closed "+connected);
-               // acc_disp=false;
+                connected = false;
+                Log.v("button", "closed " + connected);
+                // acc_disp=false;
             }
         }
     };
@@ -177,7 +190,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onResume() {
         super.onResume();
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-        getSensorManager.registerListener(this,gyroscope,SensorManager.SENSOR_DELAY_NORMAL);
+        getSensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     // unregister in onPause
@@ -202,19 +215,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         displayCurrentValues();
         // display the max values
         //displayMaxValues();
-        if(sensorEvent.sensor.getType()==Sensor.TYPE_ACCELEROMETER) {
+        if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             // get the change in x,y,z values of the accelerometer
             deltaX = Math.abs(lastX - sensorEvent.values[0]);
             deltaY = Math.abs(lastY - sensorEvent.values[1]);
             deltaZ = Math.abs(lastZ - sensorEvent.values[2]);
 //            Thread newThread = new Thread(new ClientThread(deltaX,deltaY,deltaZ));
 //            newThread.start();
-        }
-        else if(sensorEvent.sensor.getType()==Sensor.TYPE_GYROSCOPE)
-        {
-           delGX = Math.abs(sensorEvent.values[0]);
-           delGY = Math.abs(sensorEvent.values[1]);
-           delGZ = Math.abs(sensorEvent.values[2]);
+        } else if (sensorEvent.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
+            delGX = Math.abs(sensorEvent.values[0]);
+            delGY = Math.abs(sensorEvent.values[1]);
+            delGZ = Math.abs(sensorEvent.values[2]);
         }
         // if the change is below 2, it is just plain noise
 
@@ -223,14 +234,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //        if (deltaY < 2)
 //            deltaY = 0;
         //if ((deltaX > vibrateThreshold) || (deltaY > vibrateThreshold) || (deltaZ > vibrateThreshold))
-            //v.vibrate(600);
+        //v.vibrate(600);
     }
 
     public void displayCleanValues() {
         currentX.setText("0.0");
         currentY.setText("0.0");
         currentZ.setText("0.0");
-
 
 
         gyroX.setText("0.0");
@@ -279,9 +289,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
 
-
-
-    }
+}
 
 
 

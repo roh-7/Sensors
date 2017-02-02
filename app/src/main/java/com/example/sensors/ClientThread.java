@@ -1,5 +1,6 @@
 package com.example.sensors;
 
+import android.app.Fragment;
 import android.util.Log;
 
 import java.io.BufferedWriter;
@@ -8,7 +9,7 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 
-public class ClientThread implements Runnable {
+public class ClientThread extends Fragment implements Runnable {
     Float x, y, z;
 
     public ClientThread(Float x, Float y, Float z) {
