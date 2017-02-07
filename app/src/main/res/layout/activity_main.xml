@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
@@ -9,7 +9,9 @@
     android:gravity="center"
     android:orientation="vertical"
     android:paddingTop="20dp"
-    tools:context="com.example.sensors.MainActivity">
+    tools:context="com.example.sensors.MainActivity"
+    xmlns:stream="http://schemas.android.com/apk/res-auto"
+    >
 
     <ScrollView
         android:layout_width="match_parent"
@@ -20,10 +22,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <VideoView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/Video"/>
+
 
             <EditText
                 android:id="@+id/ipad"
@@ -46,8 +45,19 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Click"/>
+           <!-- <com.github.niqdev.mjpeg.MjpegSurfaceView
+                android:id="@+id/VIEW_NAME"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                stream:type="stream_default" />
+            -->
+            <WebView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/webview1"></WebView>
+
         </LinearLayout>
 
     </ScrollView>
-</LinearLayout>
+</RelativeLayout>
 

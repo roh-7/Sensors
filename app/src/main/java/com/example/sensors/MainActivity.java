@@ -11,11 +11,17 @@ import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.MediaController;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
+
+import com.github.niqdev.mjpeg.DisplayMode;
+import com.github.niqdev.mjpeg.Mjpeg;
+import com.github.niqdev.mjpeg.MjpegView;
 
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
@@ -23,10 +29,13 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 
+
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
-    PostToDB postToDB;
+    //PostToDB postToDB;
     //public int c = 0;
+    //@BindView(R.id.VIEW_NAME)
+    MjpegView mjpegView;
 
     public VideoView video;
     public EditText address;
@@ -53,12 +62,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public float deltaY = 0;
     public float deltaZ = 0;
 
-    Thread newThread = new Thread(new ClientThre());
+    //Thread newThread = new Thread(new ClientThre());
 
 
     public float delGX = 0;
     public float delGY = 0;
     public float delGZ = 0;
+
+    int TIMEOUT = 5; //seconds
 
     public Button btn;
 
@@ -70,17 +81,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public Vibrator v;
 
+    public WebView webView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         final MediaController mediaController = new MediaController(this);
         setContentView(R.layout.activity_main);
         initialiseViews();
-        video = (VideoView) findViewById(R.id.Video);
+        //video = (VideoView) findViewById(R.id.Video);
         ipade = (EditText) findViewById(R.id.ipad);
         porte = (EditText) findViewById(R.id.port);
         Log.v("tag","tag");
         btn = (Button) findViewById(R.id.Start);
+        webView = (WebView) findViewById(R.id.webview1);
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -91,11 +104,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     Log.v("tag",address);
                     Uri uri = Uri.parse(address);
                     Log.v("tag","tag12");
-                    video.setMediaController(mediaController);
+                    /*video.setMediaController(mediaController);
                     video.setVideoURI(uri);
                     Log.v("tag","tag433");
 
-                    video.start();
+                    video.start();*/
+                    //loadipcam new method for creating a webview doesnt work
+                    loadipcam(address);
+
                 }
                 catch(Exception e){
                     e.printStackTrace();
@@ -128,6 +144,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         v = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);
     }
 
+    private void loadipcam(String adds){
+        /*Tried this but this aint working as it sends a single request for the page*/
+        webView.loadUrl(adds);
+       // Thread webThread = new Thread(new webthreadview());
+        //webThread.start();
+
+    }
+
+    /*
+//    cannot modify UI with a thread and this is a cheap solution
+    public class webthreadview implements Runnable{
+        @Override
+        public void run() {
+            while (true) {
+                webView.reload();
+            }
+        }
+    }*/
     public class ClientThre implements Runnable {
         PrintWriter out;
         Socket socket;
@@ -135,15 +169,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         public void run() {
             try {
                 InetAddress serverAddr = InetAddress.getByName(ip);
-                Log.v("boo", "hii");
                 socket = new Socket(serverAddr, port);
-                Log.v("boo", "kjkh");
                 out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
-                Log.v("boo", "gfds");
+                Log.v("INSIDE", "sending sensor data to remote host");
                 while (true) {
                     out.printf("A:%10.2f\t %10.2f\t %10.2f\n", deltaX, deltaY, deltaZ);
                     out.printf("G:%10.2f\t %10.2f\t %10.2f\n", delGX, delGY, delGZ);
-                    Log.v("boo", "ijo");
                     out.flush();
                     Thread.sleep(2);
                     if (!connected) {
@@ -151,14 +182,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     }
                 }
             } catch (Exception e) {
-                Log.v("boo", "uidfn");
+
                 e.printStackTrace();
             } finally {
                 try {
                     Log.v("socket", "closed");
                     socket.close();
                 } catch (Exception e) {
-                    Log.v("boo", "fiajcak");
+                    Log.v("end of sensor thread", "reached");
                     e.printStackTrace();
                 }
             }
