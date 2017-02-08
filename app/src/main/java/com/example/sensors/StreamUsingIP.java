@@ -27,13 +27,13 @@ public class StreamUsingIP extends Activity implements MediaPlayer.OnPreparedLis
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         Window window = getWindow();
-        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         window.setBackgroundDrawableResource(android.R.color.black);
         setContentView(R.layout.stream_activity);
         SurfaceView surfaceView = (SurfaceView) findViewById(R.id.surfaceView);
         _surfaceHolder = surfaceView.getHolder();
         _surfaceHolder.addCallback(this);
-        _surfaceHolder.setFixedSize(320,240);
+        _surfaceHolder.setFixedSize(320, 240);
     }
 
     @Override
@@ -49,9 +49,8 @@ public class StreamUsingIP extends Activity implements MediaPlayer.OnPreparedLis
         Context context = getApplicationContext();
         //Map<String,String> headers = getRtspHeaders();
         Uri source = Uri.parse(ip);
-        try
-        {
-            _mediaPlayer.setDataSource(context,source/*headers*/);
+        try {
+            _mediaPlayer.setDataSource(context, source/*headers*/);
 
             _mediaPlayer.setOnPreparedListener(this);
             _mediaPlayer.prepareAsync();
@@ -61,7 +60,8 @@ public class StreamUsingIP extends Activity implements MediaPlayer.OnPreparedLis
     }
 
     @Override
-    public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {}
+    public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
+    }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
