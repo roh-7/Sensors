@@ -11,31 +11,31 @@ import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.MediaController;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.VideoView;
-
-import com.github.niqdev.mjpeg.DisplayMode;
-import com.github.niqdev.mjpeg.Mjpeg;
-import com.github.niqdev.mjpeg.MjpegView;
 
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.X509TrustManager;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
-    //PostToDB postToDB;
+    PostToDB postToDB;
     //public int c = 0;
-    //@BindView(R.id.VIEW_NAME)
-    MjpegView mjpegView;
 
     public VideoView video;
     public EditText address;
@@ -62,14 +62,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public float deltaY = 0;
     public float deltaZ = 0;
 
-    //Thread newThread = new Thread(new ClientThre());
+    Thread newThread = new Thread(new ClientThre());
 
 
     public float delGX = 0;
     public float delGY = 0;
     public float delGZ = 0;
-
-    int TIMEOUT = 5; //seconds
 
     public Button btn;
 
@@ -81,19 +79,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public Vibrator v;
 
-    public WebView webView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         final MediaController mediaController = new MediaController(this);
         setContentView(R.layout.activity_main);
         initialiseViews();
-        //video = (VideoView) findViewById(R.id.Video);
+        video = (VideoView) findViewById(R.id.Video);
         ipade = (EditText) findViewById(R.id.ipad);
         porte = (EditText) findViewById(R.id.port);
-        Log.v("tag","tag");
+        Log.v("tag", "tag");
         btn = (Button) findViewById(R.id.Start);
-        webView = (WebView) findViewById(R.id.webview1);
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -101,24 +97,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     address = (EditText) findViewById(R.id.StreamAddress);
                     String adds = address.getText().toString();
                     String address = "http://" + adds;
-                    Log.v("tag",address);
+                    Log.v("tag", address);
                     Uri uri = Uri.parse(address);
-                    Log.v("tag","tag12");
-                    /*video.setMediaController(mediaController);
+                    Log.v("tag", "tag12");
+
+                    video.setMediaController(mediaController);
                     video.setVideoURI(uri);
-                    Log.v("tag","tag433");
-
-                    video.start();*/
-                    //loadipcam new method for creating a webview doesnt work
-                    loadipcam(address);
-
-                }
-                catch(Exception e){
+                    Log.v("tag", "tag433");
+                    trustEveryone();
+                    video.start();
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         });
-
 
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -140,28 +132,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //        btn.setOnClickListener(connectListener);
 
 
-
         v = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);
     }
 
-    private void loadipcam(String adds){
-        /*Tried this but this aint working as it sends a single request for the page*/
-        webView.loadUrl(adds);
-       // Thread webThread = new Thread(new webthreadview());
-        //webThread.start();
-
-    }
-
-    /*
-//    cannot modify UI with a thread and this is a cheap solution
-    public class webthreadview implements Runnable{
-        @Override
-        public void run() {
-            while (true) {
-                webView.reload();
-            }
-        }
-    }*/
     public class ClientThre implements Runnable {
         PrintWriter out;
         Socket socket;
@@ -169,12 +142,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         public void run() {
             try {
                 InetAddress serverAddr = InetAddress.getByName(ip);
+                Log.v("boo", "hii");
                 socket = new Socket(serverAddr, port);
+                Log.v("boo", "kjkh");
                 out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
-                Log.v("INSIDE", "sending sensor data to remote host");
+                Log.v("boo", "gfds");
                 while (true) {
                     out.printf("A:%10.2f\t %10.2f\t %10.2f\n", deltaX, deltaY, deltaZ);
                     out.printf("G:%10.2f\t %10.2f\t %10.2f\n", delGX, delGY, delGZ);
+                    Log.v("boo", "ijo");
                     out.flush();
                     Thread.sleep(2);
                     if (!connected) {
@@ -182,14 +158,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     }
                 }
             } catch (Exception e) {
-
+                Log.v("boo", "uidfn");
                 e.printStackTrace();
             } finally {
                 try {
                     Log.v("socket", "closed");
                     socket.close();
                 } catch (Exception e) {
-                    Log.v("end of sensor thread", "reached");
+                    Log.v("boo", "fiajcak");
                     e.printStackTrace();
                 }
             }
@@ -313,12 +289,77 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //        gyroY.setText(curgy);
 //        gyroZ.setText(curgz);
 
-        //String time = new SimpleDateFormat("DD/MM/YYYY.HH.mm.ss").format(new Timestamp(System.currentTimeMillis()));
-        //Log.v("time", time);
-        //postToDB = new PostToDB(curx, cury, curz, time);
-        //if(c%678==0)
-        //postToDB.post();
+    //String time = new SimpleDateFormat("DD/MM/YYYY.HH.mm.ss").format(new Timestamp(System.currentTimeMillis()));
+    //Log.v("time", time);
+    //postToDB = new PostToDB(curx, cury, curz, time);
+    //if(c%678==0)
+    //postToDB.post();
+
+    private void trustEveryone() {
+        try {
+            HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier(){
+                public boolean verify(String hostname, SSLSession session) {
+                    return true;
+                }});
+            SSLContext context = SSLContext.getInstance("TLS");
+            context.init(null, new X509TrustManager[]{new X509TrustManager(){
+                public void checkClientTrusted(X509Certificate[] chain,
+                                               String authType) throws CertificateException {}
+                public void checkServerTrusted(X509Certificate[] chain,
+                                               String authType) throws CertificateException {}
+                public X509Certificate[] getAcceptedIssuers() {
+                    return new X509Certificate[0];
+                }}}, new SecureRandom());
+            HttpsURLConnection.setDefaultSSLSocketFactory(
+                    context.getSocketFactory());
+        } catch (Exception e) { // should never happen
+            e.printStackTrace();
+        }
     }
+
+   /* private static OkHttpClient getUnsafeOkHttpClient() {
+        try {
+            // Create a trust manager that does not validate certificate chains
+            final TrustManager[] trustAllCerts = new TrustManager[] {
+                    new X509TrustManager() {
+                        @Override
+                        public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+                        }
+
+                        @Override
+                        public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+                        }
+
+                        @Override
+                        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                            return new java.security.cert.X509Certificate[]{};
+                        }
+                    }
+            };
+
+            // Install the all-trusting trust manager
+            final SSLContext sslContext = SSLContext.getInstance("SSL");
+            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+            // Create an ssl socket factory with our all-trusting manager
+            final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+
+            OkHttpClient.Builder builder = new OkHttpClient.Builder();
+            builder.sslSocketFactory(sslSocketFactory);
+            builder.hostnameVerifier(new HostnameVerifier() {
+                @Override
+                public boolean verify(String hostname, SSLSession session) {
+                    return true;
+                }
+            });
+
+            OkHttpClient okHttpClient = builder.build();
+            return okHttpClient;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }*/
+
+}
 
 //    public void displayMaxValues() {
 //        if (deltaX > deltaXMax) {
