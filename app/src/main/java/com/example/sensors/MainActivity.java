@@ -1,6 +1,7 @@
 package com.example.sensors;
 
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -115,7 +116,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                     video.start();*/
                     //loadipcam new method for creating a webview doesnt work
-                    loadipcam(address);
+
+
+                    loadWebView(address);
+                    //loadipcam(address);
 
                 }
                 catch(Exception e){
@@ -148,15 +152,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         v = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);
     }
 
+    private void loadWebView(String address) {
+        Intent webviewintent = new Intent(this, WebviewActivity.class);
+        webviewintent.putExtra("url",address);
+        startActivity(webviewintent);
+    }
+
     private void loadipcam(String adds){
         /*Tried this but this aint working as it sends a single request for the page*/
         Uri uri =Uri.parse(adds);
         CustomTabsIntent.Builder intentBuilder = new CustomTabsIntent.Builder();
+        intentBuilder.enableUrlBarHiding();
 
 // Begin customizing
 // set toolbar colors
-        intentBuilder.setToolbarColor(ContextCompat.getColor(this, R.color.colorPrimary));
-        intentBuilder.setSecondaryToolbarColor(ContextCompat.getColor(this, R.color.colorPrimaryDark));
+       // intentBuilder.setToolbarColor(ContextCompat.getColor(this, R.color.colorPrimary));
+       // intentBuilder.setSecondaryToolbarColor(ContextCompat.getColor(this, R.color.colorPrimaryDark));
 
 // set start and exit animations
 //        intentBuilder.setStartAnimations(this, R.anim.slide_in_right, R.anim.slide_out_left);
