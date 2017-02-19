@@ -29,6 +29,10 @@ import android.widget.VideoView;
 //import com.github.niqdev.mjpeg.Mjpeg;
 //import com.github.niqdev.mjpeg.MjpegView;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -59,9 +63,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public EditText porte;
     public EditText ipade;
 
-    private float deltaXMax = 0;
-    private float deltaYMax = 0;
-    private float deltaZMax = 0;
+//    private float deltaXMax = 0;
+//    private float deltaYMax = 0;
+//    private float deltaZMax = 0;
 
 
     public float deltaX = 0;
@@ -87,44 +91,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public Vibrator v;
 
-    public WebView webView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        MediaController mediaController = new MediaController(this);
         setContentView(R.layout.activity_main);
-//        video = (VideoView) findViewById(R.id.Video);
         ipade = (EditText) findViewById(R.id.ipad);
         porte = (EditText) findViewById(R.id.port);
         Log.v("tag","tag");
         btn = (Button) findViewById(R.id.Start);
-//        webView = (WebView) findViewById(R.id.webview1);
-        btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                try {
-                    address = (EditText) findViewById(R.id.StreamAddress);
-                    String adds = address.getText().toString();
-                    String address = "http://" + adds;
-                    Log.v("tag",address);
-//                    Uri uri = Uri.parse(address);
-                    Log.v("tag","tag12");
-                    /*video.setMediaController(mediaController);
-                    video.setVideoURI(uri);
-                    Log.v("tag","tag433");
-
-                    video.start();*/
-                    //loadipcam new method for creating a webview doesnt work
-                    loadipcam(address);
-
-                }
-                catch(Exception e){
-                    e.printStackTrace();
-                }
-            }
-        });
-
-
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null) {
@@ -141,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             gyroscope = getSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
             getSensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
         }
-//        btn.setOnClickListener(connectListener);
+        btn.setOnClickListener(connectListener);
 
 
 
@@ -184,9 +158,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 socket = new Socket(serverAddr, port);
                 out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
                 Log.v("INSIDE", "sending sensor data to remote host");
+                JSONObject json;
                 while (true) {
-                    out.printf("A:%10.2f\t %10.2f\t %10.2f\n", deltaX, deltaY, deltaZ);
-                    out.printf("G:%10.2f\t %10.2f\t %10.2f\n", delGX, delGY, delGZ);
+                    json=new JSONObject();
+                    try {
+                        json.put("AX", deltaX);
+                        json.put("AY", deltaY);
+                        json.put("AZ", deltaZ);
+                        json.put("GX", delGX);
+                        json.put("GY", delGY);
+                        json.put("GZ", delGZ);
+                    }
+                    catch(JSONException e){
+                        e.printStackTrace();
+                    }
+
+                    out.printf(json.toString());
                     out.flush();
                     Thread.sleep(2);
                     if (!connected) {
@@ -208,6 +195,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         }
     }
+
+
     private Button.OnClickListener connectListener = new Button.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -220,6 +209,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     cThread.start();
                     connected = true;
                 }
+                address = (EditText) findViewById(R.id.StreamAddress);
+                String adds = address.getText().toString();
+                String address = "http://" + adds;
+                Log.v("address",address);
+                //loadipcam now opens a custom chrome tab
+                loadipcam(address);
+
             } else {
                 //connectPhones.setText("Start Streaming");
                 connected = false;
@@ -262,15 +258,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //displayMaxValues();
         if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             // get the change in x,y,z values of the accelerometer
-            deltaX = Math.abs(lastX - sensorEvent.values[0]);
-            deltaY = Math.abs(lastY - sensorEvent.values[1]);
-            deltaZ = Math.abs(lastZ - sensorEvent.values[2]);
-//            Thread newThread = new Thread(new ClientThread(deltaX,deltaY,deltaZ));
-//            newThread.start();
+            deltaX =sensorEvent.values[0];
+            deltaY =sensorEvent.values[1];
+            deltaZ =sensorEvent.values[2];
+
         } else if (sensorEvent.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
-            delGX = Math.abs(sensorEvent.values[0]);
-            delGY = Math.abs(sensorEvent.values[1]);
-            delGZ = Math.abs(sensorEvent.values[2]);
+            delGX = sensorEvent.values[0];
+            delGY = sensorEvent.values[1];
+            delGZ = sensorEvent.values[2];
         }
         // if the change is below 2, it is just plain noise
 
