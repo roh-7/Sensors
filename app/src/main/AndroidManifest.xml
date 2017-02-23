@@ -23,8 +23,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".webActivity" />
-        <activity android:name=".WebviewActivity"></activity>
+        <activity android:name=".WebviewActivity" />
+        <activity android:name=".MpegPlayer"></activity>
     </application>
 
 </manifest>

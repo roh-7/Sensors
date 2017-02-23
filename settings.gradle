@@ -1,1 +1,1 @@
-include ':app', ':mjpeg-view'
+include ':app'

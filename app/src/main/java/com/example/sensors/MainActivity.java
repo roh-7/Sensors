@@ -105,21 +105,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             public void onClick(View view) {
                 try {
                     address = (EditText) findViewById(R.id.StreamAddress);
-                    String adds = address.getText().toString();
-                    String address = "http://" + adds;
-                    Log.v("tag",address);
-//                    Uri uri = Uri.parse(address);
-                    Log.v("tag","tag12");
-                    /*video.setMediaController(mediaController);
-                    video.setVideoURI(uri);
-                    Log.v("tag","tag433");
+                    String url = address.getText().toString();
 
-                    video.start();*/
-                    //loadipcam new method for creating a webview doesnt work
+                    Log.v("final url",url);
 
-
-                    loadWebView(address);
-                    //loadipcam(address);
+                    loadmjpegView(url);
 
                 }
                 catch(Exception e){
@@ -149,13 +139,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
 
-        v = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);
+       // v = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);
     }
 
-    private void loadWebView(String address) {
-        Intent webviewintent = new Intent(this, WebviewActivity.class);
-        webviewintent.putExtra("url",address);
-        startActivity(webviewintent);
+    private void loadmjpegView(String address) {
+        Intent mjpegviewintent = new Intent(this, MpegPlayer.class);
+        mjpegviewintent.putExtra("url",address);
+        startActivity(mjpegviewintent);
     }
 
     private void loadipcam(String adds){
